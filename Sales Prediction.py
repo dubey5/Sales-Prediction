@@ -12,6 +12,7 @@ def removal_NA_weight2(row):
     else:
         return row['Item_Weight']
 
+    
 
 def map_data(df):
     
@@ -21,7 +22,6 @@ def map_data(df):
 
 def process_data(df):
     new_df=df.copy()
-    #new_df=new_df.drop(['Item_Identifier','Outlet_Identifier'],axis=1)
     le=preprocessing.LabelEncoder()
     new_df['Item_Fat_Content']=le.fit_transform(new_df['Item_Fat_Content'])
     new_df['Item_Type']=le.fit_transform(new_df['Item_Type'])
@@ -44,6 +44,15 @@ def ML(df1,df2):
     X1=df2.values
     pred=reg.predict(X1)
     print(reg.score(X1,pred))
+    #i=5
+    #try:
+     #   for feature, target in zip(X, Y):
+      #      plt.scatter( feature[i], target, color="b" ) 
+    #except ValueError:
+     #   pass
+    return pred
+        
+
     
     
     
@@ -74,4 +83,4 @@ sdf2['Outlet_Size'].fillna('Small',inplace=True)
 ndf1=process_data(sdf1)
 ndf2=process_data(sdf2)
 
-ML(ndf1,ndf2)
+k=ML(ndf1,ndf2)
