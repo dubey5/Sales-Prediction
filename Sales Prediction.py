@@ -1,23 +1,23 @@
-def removal_NA_weight1(row):
+def removal_NA_weight(row):
     
     if pd.isnull(row['Item_Weight']):
-        return avg_weight1[row['Item_Identifier']]
+        return avg_weight[row['Item_Identifier']]
     else:
         return row['Item_Weight']
     
-def removal_NA_weight2(row):
+def removal_zero_visib(row):
     
-    if pd.isnull(row['Item_Weight']):
-        return avg_weight2[row['Item_Fat_Content'],row['Item_Type']]
+    if row['Item_Visibility']==0:
+        return avg_visibility[row['Item_Identifier']]
     else:
-        return row['Item_Weight']
+        return row['Item_Visibility']
 
-    
 
 def map_data(df):
-    
-    fat_content={"low fat":"Low Fat","LF":"Low Fat","reg":"Regular","Low Fat":"Low Fat","Regular":"Regular"}
-    df['Item_Fat_Content']=df['Item_Fat_Content'].map(fat_content)
+    df['Item_Weight'] =df.apply(removal_NA_weight, axis=1)
+    df['Outlet_Size'].fillna('Small',inplace=True)
+    df['Item_Visibility'] =df.apply(removal_zero_visib, axis=1)
+    df['Item_Fat_Content']=df['Item_Fat_Content'].replace({"low fat":"Low Fat","LF":"Low Fat","reg":"Regular"})
     return df
 
 def process_data(df):
@@ -62,25 +62,21 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn import preprocessing
 
-sdf1=pd.read_csv("Train(Sales).csv")
-sdf2=pd.read_csv("Test(Sales).csv")
+train=pd.read_csv("Train(Sales).csv")
+test=pd.read_csv("Test(Sales).csv")
 
-avg_weight1=sdf1.groupby(['Item_Identifier'])['Item_Weight'].mean()
-avg_weight2=sdf1.groupby(['Item_Fat_Content','Item_Type'])['Item_Weight'].mean()
+train['source']='train'
+test['source']='test'
 
-sdf1=map_data(sdf1)
-sdf2=map_data(sdf2)
+combine=pd.concat([train,test],ignore_index=True)
 
-sdf1['Item_Weight'] =sdf1.apply(removal_NA_weight1, axis=1)
-sdf2['Item_Weight'] =sdf2.apply(removal_NA_weight1, axis=1)
+avg_weight=combine.groupby(['Item_Identifier'])['Item_Weight'].mean()
+avg_visibility=combine.groupby(['Item_Identifier'])['Item_Visibility'].mean()
 
-sdf1['Item_Weight'] =sdf1.apply(removal_NA_weight2, axis=1)
-sdf2['Item_Weight'] =sdf2.apply(removal_NA_weight2, axis=1)
+combine=map_data(combine)
 
-sdf1['Outlet_Size'].fillna('Small',inplace=True)
-sdf2['Outlet_Size'].fillna('Small',inplace=True)
 
-ndf1=process_data(sdf1)
-ndf2=process_data(sdf2)
+#ndf1=process_data(sdf1)
+#ndf2=process_data(sdf2)
 
-k=ML(ndf1,ndf2)
+#k=ML(ndf1,ndf2)
