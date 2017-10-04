@@ -18,39 +18,38 @@ def map_data(df):
     df['Outlet_Size'].fillna('Small',inplace=True)
     df['Item_Visibility'] =df.apply(removal_zero_visib, axis=1)
     df['Item_Fat_Content']=df['Item_Fat_Content'].replace({"low fat":"Low Fat","LF":"Low Fat","reg":"Regular"})
+    df['Outlet_Years']=2013-df['Outlet_Establishment_Year']
     return df
 
 def process_data(df):
     new_df=df.copy()
     le=preprocessing.LabelEncoder()
-    new_df['Item_Fat_Content']=le.fit_transform(new_df['Item_Fat_Content'])
-    new_df['Item_Type']=le.fit_transform(new_df['Item_Type'])
-    new_df['Outlet_Location_Type']=le.fit_transform(new_df['Outlet_Location_Type'])
-    new_df['Outlet_Size']=le.fit_transform(new_df['Outlet_Size'])
-    new_df['Outlet_Type']=le.fit_transform(new_df['Outlet_Type'])
-    new_df['Item_Identifier']=le.fit_transform(new_df['Item_Identifier'])
-    new_df['Outlet_Identifier']=le.fit_transform(new_df['Outlet_Identifier'])
+    cat_var=['Item_Fat_Content','Item_Type','Outlet_Location_Type','Outlet_Size','Outlet_Type']
+    for i in cat_var:
+        new_df[i]=le.fit_transform(new_df[i])
+    new_df.drop(['Outlet_Establishment_Year','Item_Identifier','Outlet_Identifier'],axis=1,inplace=True)
     return new_df
 
 
 
 
-def ML(df1,df2):
-    X=df1.drop(['Item_Outlet_Sales'],axis=1).values
-    Y=df1['Item_Outlet_Sales'].values
-    #feature_train,feature_test,label_train,label_test=train_test_split(X,Y,test_size=0.2)
+def ML(df):
+    
+    train_set=df[df['source']=="train"]
+    test_set=df[df['source']=="test"]
+    
+    train_f=train_set.drop(['source','Item_Outlet_Sales'],axis=1).values
+    train_l=train_set['Item_Outlet_Sales'].values
+    
+    test_f=test_set.drop(['Item_Outlet_Sales','source'],axis=1).values
+    
+    
     reg=LinearRegression()
-    reg.fit(X,Y)
-    X1=df2.values
-    pred=reg.predict(X1)
-    print(reg.score(X1,pred))
-    #i=5
-    #try:
-     #   for feature, target in zip(X, Y):
-      #      plt.scatter( feature[i], target, color="b" ) 
-    #except ValueError:
-     #   pass
-    return pred
+    reg.fit(train_f,train_l)
+    
+    pred=reg.predict(test_f)
+    print(reg.score(test_f,pred))
+    
         
 
     
@@ -75,8 +74,8 @@ avg_visibility=combine.groupby(['Item_Identifier'])['Item_Visibility'].mean()
 
 combine=map_data(combine)
 
+ndf=process_data(combine)
 
-#ndf1=process_data(sdf1)
-#ndf2=process_data(sdf2)
+ML(ndf)
 
-#k=ML(ndf1,ndf2)
+
