@@ -41,14 +41,19 @@ def ML(df):
     train_f=train_set.drop(['source','Item_Outlet_Sales'],axis=1).values
     train_l=train_set['Item_Outlet_Sales'].values
     
+    #train_set.to_csv("train_modified.csv",index=False)
+    
+    
     test_f=test_set.drop(['Item_Outlet_Sales','source'],axis=1).values
-    
-    
+        
     reg=LinearRegression()
     reg.fit(train_f,train_l)
     
     pred=reg.predict(test_f)
-    print(reg.score(test_f,pred))
+    print("The r-square value of this model is : ",reg.score(test_f,pred))
+    
+    
+    
     
         
 
